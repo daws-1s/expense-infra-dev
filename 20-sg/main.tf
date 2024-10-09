@@ -227,7 +227,7 @@ resource "aws_security_group_rule" "app_alb_vpn" {
   from_port         = 80
   to_port           = 80
   protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
+  source_security_group_id = module.vpn_sg.id
   security_group_id = module.app_alb_sg.id
 }
 
@@ -236,7 +236,7 @@ resource "aws_security_group_rule" "backend_vpn" {
   from_port         = 22
   to_port           = 22
   protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
+  source_security_group_id = module.vpn_sg.id
   security_group_id = module.backend_sg.id
 }
 
@@ -245,6 +245,6 @@ resource "aws_security_group_rule" "backend_vpn_8080" {
   from_port         = 8080
   to_port           = 8080
   protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
+  source_security_group_id = module.vpn_sg.id
   security_group_id = module.backend_sg.id
 }
