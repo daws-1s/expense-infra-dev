@@ -19,3 +19,7 @@ variable "backend_tags" {
         Component = "backend"
     }
 }
+
+variable "zone_name" {
+    default = "daws1s.online"
+}
