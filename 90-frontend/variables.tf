@@ -14,9 +14,9 @@ variable "common_tags" {
     }
 }
 
-variable "web_alb_tags" {
+variable "frontend_tags" {
     default = {
-        Component = "app-alb"
+        Component = "frontend"
     }
 }
 

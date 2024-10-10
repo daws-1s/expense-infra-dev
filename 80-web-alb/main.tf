@@ -1,21 +1,21 @@
-module "app_alb" {
+module "web_alb" {
   source = "terraform-aws-modules/alb/aws"
 
-  internal = true
-  name    = "${local.resource_name}-app-alb" #expense-dev-app-alb
+  internal = false
+  name    = "${local.resource_name}-web-alb" #expense-dev-app-alb
   vpc_id  = local.vpc_id
-  subnets = local.private_subnet_ids
-  security_groups = [data.aws_ssm_parameter.app_alb_sg_id.value]
+  subnets = local.public_subnet_ids
+  security_groups = [data.aws_ssm_parameter.web_alb_sg_id.value]
   create_security_group = false
   enable_deletion_protection = false
   tags = merge(
     var.common_tags,
-    var.app_alb_tags
+    var.web_alb_tags
   )
 }
 
 resource "aws_lb_listener" "http" {
-  load_balancer_arn = module.app_alb.arn
+  load_balancer_arn = module.web_alb.arn
   port              = "80"
   protocol          = "HTTP"
 
@@ -30,17 +30,36 @@ resource "aws_lb_listener" "http" {
   }
 }
 
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = module.web_alb.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = local.https_certificate_arn
+
+  default_action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/html"
+      message_body = "<h1>Hello, I am from Web ALB HTTPS</h1>"
+      status_code  = "200"
+    }
+  }
+}
+
+
 module "records" {
   source  = "terraform-aws-modules/route53/aws//modules/records"
 
-  zone_name = var.zone_name #daws1s.online
+  zone_name = var.zone_name #daws81s.online
   records = [
     {
-      name    = "*.app-${var.environment}" # *.app-dev
+      name    = "expense-${var.environment}" # *.app-dev
       type    = "A"
       alias   = {
-        name    = module.app_alb.dns_name
-        zone_id = module.app_alb.zone_id # This belongs ALB internal hosted zone, not ours
+        name    = module.web_alb.dns_name
+        zone_id = module.web_alb.zone_id # This belongs ALB internal hosted zone, not ours
       }
       allow_overwrite = true
     }
