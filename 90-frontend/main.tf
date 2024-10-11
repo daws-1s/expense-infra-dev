@@ -174,7 +174,7 @@ resource "aws_lb_listener_rule" "frontend" {
 
   condition {
     host_header {
-      values = ["expense-${var.environment}.${var.zone_name}"] # expense-dev.daws1s.online
+      values = ["expense-${var.environment}.${var.zone_name}"] #expense-dev.daws1s.onlinefr
     }
   }
 }
